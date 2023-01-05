@@ -167,3 +167,11 @@ func visitCommands(cmd *cobra.Command, fn func(*cobra.Command)) {
 		visitCommands(c, fn)
 	}
 }
+
+func readKubeConfigFile(kubeconfigPath string) (string, error) {
+	kubeConfigData, err := os.ReadFile(kubeconfigPath)
+	if err != nil {
+		return "Cant read kubeconfig", err
+	}
+	return string(kubeConfigData), err
+}
