@@ -13,7 +13,7 @@ func NewConfig(path string) {
 }
 
 func GetKubeConfig(path string) ([]byte, error) {
-	kubeconfigFile, err := os.ReadFile("/tmp/dat")
+	kubeconfigFile, err := os.ReadFile("$HOME/.kube/config")
 	if err != nil {
 		return []byte("Error"), err
 	}

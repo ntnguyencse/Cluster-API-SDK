@@ -1,10 +1,17 @@
-package generate
+package client
 
 import (
+	_ "fmt"
 	_ "os"
 
-	_ "sigs.k8s.io/cluster-api/cmd/clusterctl/cmd"
+	_ "github.com/pkg/errors"
+
+	// "github.com/spf13/cobra"
+	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
+	// "sigs.k8s.io/cluster-api/cmd"
 )
+
+var configFile string
 
 type GenerateClusterOptions struct {
 	kubeconfig             string
@@ -51,6 +58,49 @@ func init() {
 // # Prints the list of variables required by the yaml file for creating workload cluster.
 // clusterctl generate cluster my-cluster --list-variables`),
 
-func GenerateKubernetesCluster(clusterName string, options GenerateClusterOptions) {
-	return
+func GenerateKubernetesCluster(clusterName string, gc GenerateClusterOptions) (string, error) {
+	// var gc = &GenerateClusterOptions{}
+	c, err := client.New(configFile)
+	if err != nil {
+		return "Can't create client", err
+	}
+
+	templateOptions := client.GetClusterTemplateOptions{
+		Kubeconfig:        client.Kubeconfig{Path: gc.kubeconfig, Context: gc.kubeconfigContext},
+		ClusterName:       clusterName,
+		TargetNamespace:   gc.targetNamespace,
+		KubernetesVersion: gc.kubernetesVersion,
+		ListVariablesOnly: gc.listVariables,
+	}
+
+	templateOptions.ControlPlaneMachineCount = &gc.controlPlaneMachineCount
+
+	templateOptions.WorkerMachineCount = &gc.workerMachineCount
+
+	if gc.url != "" {
+		templateOptions.URLSource = &client.URLSourceOptions{
+			URL: gc.url,
+		}
+	}
+
+	if gc.configMapNamespace != "" || gc.configMapName != "" || gc.configMapDataKey != "" {
+		templateOptions.ConfigMapSource = &client.ConfigMapSourceOptions{
+			Namespace: gc.configMapNamespace,
+			Name:      gc.configMapName,
+			DataKey:   gc.configMapDataKey,
+		}
+	}
+
+	if gc.infrastructureProvider != "" || gc.flavor != "" {
+		templateOptions.ProviderRepositorySource = &client.ProviderRepositorySourceOptions{
+			InfrastructureProvider: gc.infrastructureProvider,
+			Flavor:                 gc.flavor,
+		}
+	}
+
+	template, err := c.GetClusterTemplate(templateOptions)
+	if err != nil {
+		return "Can't generate cluster", err
+	}
+	return YamlToString(template)
 }
