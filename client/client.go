@@ -5,11 +5,22 @@ import (
 )
 
 var (
-	ConfigFile string
+	ConfigFile     string
+	kubeConfigPath string
+	kubeConfig     string
 )
 
-func NewClusterctlClient(clusterctlConfigFile string) (client.Client, error) {
+func New() (client.Client, error) {
+	return client.New(configFile)
+}
+
+func NewClusterctlClient(clusterctlConfigFile string, kubeCfgPath string) (client.Client, error) {
 	clusterctlClient, err := client.New(clusterctlConfigFile)
+	if err != nil {
+		return nil, err
+	}
+	// kubeConfigPath = kubeCfgPath
+	kubeConfig, err = readKubeConfigFile(kubeCfgPath)
 	if err != nil {
 		return nil, err
 	}
