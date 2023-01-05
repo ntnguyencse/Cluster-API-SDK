@@ -1,4 +1,4 @@
-package generate
+package client
 
 import (
 	_ "fmt"
@@ -9,8 +9,9 @@ import (
 	// "github.com/spf13/cobra"
 	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	// "sigs.k8s.io/cluster-api/cmd"
-	wrapper "github.com/ntnguyencse/cluster-api-sdk/client"
 )
+
+var configFile string
 
 type GenerateClusterOptions struct {
 	kubeconfig             string
@@ -57,13 +58,11 @@ func init() {
 // # Prints the list of variables required by the yaml file for creating workload cluster.
 // clusterctl generate cluster my-cluster --list-variables`),
 
-func GenerateKubernetesCluster(clusterName string, options GenerateClusterOptions) error {
-	var gc = &GenerateClusterOptions{}
-	c, err := client.New(wrapper.ConfigFile)
-
-	c.GetProvidersConfig()
+func GenerateKubernetesCluster(clusterName string, gc GenerateClusterOptions) (string, error) {
+	// var gc = &GenerateClusterOptions{}
+	c, err := client.New(configFile)
 	if err != nil {
-		return err
+		return "Can't create client", err
 	}
 
 	templateOptions := client.GetClusterTemplateOptions{
@@ -73,12 +72,35 @@ func GenerateKubernetesCluster(clusterName string, options GenerateClusterOption
 		KubernetesVersion: gc.kubernetesVersion,
 		ListVariablesOnly: gc.listVariables,
 	}
-	// Assign value to command's options.
-	templateOptions.ControlPlaneMachineCount = &options.controlPlaneMachineCount
-	templateOptions.WorkerMachineCount = &options.workerMachineCount
-	// templateOptions.Flavor = options.flavor
-	templateOptions.TargetNamespace = options.targetNamespace
-	// templateOptions.InfrastructureProvider = options.infrastructureProvider
-	templateOptions.KubernetesVersion = options.kubernetesVersion
-	return nil
+
+	templateOptions.ControlPlaneMachineCount = &gc.controlPlaneMachineCount
+
+	templateOptions.WorkerMachineCount = &gc.workerMachineCount
+
+	if gc.url != "" {
+		templateOptions.URLSource = &client.URLSourceOptions{
+			URL: gc.url,
+		}
+	}
+
+	if gc.configMapNamespace != "" || gc.configMapName != "" || gc.configMapDataKey != "" {
+		templateOptions.ConfigMapSource = &client.ConfigMapSourceOptions{
+			Namespace: gc.configMapNamespace,
+			Name:      gc.configMapName,
+			DataKey:   gc.configMapDataKey,
+		}
+	}
+
+	if gc.infrastructureProvider != "" || gc.flavor != "" {
+		templateOptions.ProviderRepositorySource = &client.ProviderRepositorySourceOptions{
+			InfrastructureProvider: gc.infrastructureProvider,
+			Flavor:                 gc.flavor,
+		}
+	}
+
+	template, err := c.GetClusterTemplate(templateOptions)
+	if err != nil {
+		return "Can't generate cluster", err
+	}
+	return YamlToString(template)
 }

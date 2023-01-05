@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/ntnguyencse/cluster-api-sdk/client/generate"
+	_ "github.com/ntnguyencse/cluster-api-sdk/client"
 )
 
 func init() {
