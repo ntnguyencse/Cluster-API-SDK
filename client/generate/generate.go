@@ -1,9 +1,15 @@
 package generate
 
 import (
+	_ "fmt"
 	_ "os"
 
-	_ "sigs.k8s.io/cluster-api/cmd/clusterctl/cmd"
+	_ "github.com/pkg/errors"
+
+	// "github.com/spf13/cobra"
+	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
+	// "sigs.k8s.io/cluster-api/cmd"
+	wrapper "github.com/ntnguyencse/cluster-api-sdk/client"
 )
 
 type GenerateClusterOptions struct {
@@ -51,6 +57,28 @@ func init() {
 // # Prints the list of variables required by the yaml file for creating workload cluster.
 // clusterctl generate cluster my-cluster --list-variables`),
 
-func GenerateKubernetesCluster(clusterName string, options GenerateClusterOptions) {
-	return
+func GenerateKubernetesCluster(clusterName string, options GenerateClusterOptions) error {
+	var gc = &GenerateClusterOptions{}
+	c, err := client.New(wrapper.ConfigFile)
+
+	c.GetProvidersConfig()
+	if err != nil {
+		return err
+	}
+
+	templateOptions := client.GetClusterTemplateOptions{
+		Kubeconfig:        client.Kubeconfig{Path: gc.kubeconfig, Context: gc.kubeconfigContext},
+		ClusterName:       clusterName,
+		TargetNamespace:   gc.targetNamespace,
+		KubernetesVersion: gc.kubernetesVersion,
+		ListVariablesOnly: gc.listVariables,
+	}
+	// Assign value to command's options.
+	templateOptions.ControlPlaneMachineCount = &options.controlPlaneMachineCount
+	templateOptions.WorkerMachineCount = &options.workerMachineCount
+	// templateOptions.Flavor = options.flavor
+	templateOptions.TargetNamespace = options.targetNamespace
+	// templateOptions.InfrastructureProvider = options.infrastructureProvider
+	templateOptions.KubernetesVersion = options.kubernetesVersion
+	return nil
 }
