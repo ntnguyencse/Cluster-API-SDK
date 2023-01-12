@@ -1,28 +1,45 @@
 package client
 
 import (
-	"sigs.k8s.io/cluster-api/cmd/clusterctl/client"
+	"fmt"
+
+	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
+	client "sigs.k8s.io/cluster-api/cmd/clusterctl/client"
+	cluster "sigs.k8s.io/cluster-api/cmd/clusterctl/client/cluster"
+	config "sigs.k8s.io/cluster-api/cmd/clusterctl/client/config"
+	repository "sigs.k8s.io/cluster-api/cmd/clusterctl/client/repository"
+	cmd "sigs.k8s.io/cluster-api/cmd/clusterctl/cmd"
 )
 
-var (
-	ConfigFile     string
-	kubeConfigPath string
-	kubeConfig     string
-)
+var configFile = "/home/ubuntu/cluster-api-sdk/config"
+var kubeconfigFile = "/home/ubuntu/.kube/config"
+var _ cmd.Version
 
-func New() (client.Client, error) {
-	return client.New(configFile)
-}
+var _ client.ClusterClientFactoryInput
 
-func NewClusterctlClient(clusterctlConfigFile string, kubeCfgPath string) (client.Client, error) {
-	clusterctlClient, err := client.New(clusterctlConfigFile)
+func CreateNewClient(path string) (client.Client, error) {
+	// Inject config
+	configClient, err := config.New(configFile)
 	if err != nil {
-		return nil, err
+		fmt.Println("Error create configClient")
 	}
-	// kubeConfigPath = kubeCfgPath
-	kubeConfig, err = readKubeConfigFile(kubeCfgPath)
-	if err != nil {
-		return nil, err
+	client.InjectConfig(configClient)
+	// Inject Repository Factory
+	provider := config.NewProvider(
+		config.OpenStackProviderName,
+		"https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/latest/infrastructure-components.yaml",
+		clusterctlv1.InfrastructureProviderType,
+	)
+	repositoryClient, err1 := repository.New(provider, configClient, repository.InjectYamlProcessor(nil))
+	if err1 != nil {
+		fmt.Println("Error create repository client")
+		_ = repositoryClient
 	}
-	return clusterctlClient, err
+
+	kubeConfig := cluster.Kubeconfig{Path: kubeconfigFile}
+	clusterClient := cluster.New(kubeConfig, configClient)
+	// repoClientFactoryInput := client.RepositoryClientFactoryInput{Provider: provider, Processor: }
+	// client.InjectRepositoryFactory(repoClient)
+	client, err2 := client.New(configFile,
+		client.InjectConfig(configClient))
 }

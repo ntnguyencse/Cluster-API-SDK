@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/ntnguyencse/cluster-api-sdk/client"
+	"github.com/ntnguyencse/cluster-api-sdk/client"
 )
 
 func init() {
@@ -14,4 +14,6 @@ func init() {
 
 func main() {
 	fmt.Println("Main function")
+	client.DescribeCluster("cluster")
+
 }
