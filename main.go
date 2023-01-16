@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/ntnguyencse/cluster-api-sdk/client"
+	// clusterclient "sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 )
 
 var kubeconfigFile = "/home/ubuntu/.kube/config"
@@ -16,10 +17,17 @@ func init() {
 
 func main() {
 	fmt.Println("Main function")
-	Client, err := client.CreateNewClient(kubeconfigFile)
+	c, err := client.CreateNewClient(kubeconfigFile)
 	fmt.Println("Created client")
 	if err != nil {
 		fmt.Println("Error when create client", err)
 	}
-	fmt.Println(Client.GetProvidersConfig())
+	provider, err := c.Client.GetProvidersConfig()
+	fmt.Println("Get Provider Informations")
+	fmt.Println(provider[0])
+	fmt.Println("Get KubeConfig")
+
+	kubeCluster, err := c.GetKubeconfig("test1", "default")
+	fmt.Println(kubeCluster)
+	c.GetClusterTemplate("a", "1.24.8", 3, 3, "test", c.ProviderClient.Name(), "medium")
 }
