@@ -11,35 +11,54 @@ import (
 	cmd "sigs.k8s.io/cluster-api/cmd/clusterctl/cmd"
 )
 
-var configFile = "/home/ubuntu/cluster-api-sdk/config"
+var configFile = "/home/ubuntu/cluster-api-sdk/config.yaml"
 var kubeconfigFile = "/home/ubuntu/.kube/config"
 var _ cmd.Version
 
 var _ client.ClusterClientFactoryInput
 
+type Client struct {
+	ConfigClient     config.Client
+	ProviderClient   config.Provider
+	RepositoryClient repository.Client
+	ClusterClient    cluster.Client
+	Client           client.Client
+	Kubeconfig       cluster.Kubeconfig
+}
+
+var Clusterctl Client
+
 func CreateNewClient(path string) (client.Client, error) {
 	// Inject config
-	configClient, err := config.New(configFile)
+	var err error
+	Clusterctl.ConfigClient, err = config.New(configFile)
 	if err != nil {
-		fmt.Println("Error create configClient")
+		fmt.Println("Error create configClient", err)
+		return nil, err
 	}
-	client.InjectConfig(configClient)
+	client.InjectConfig(Clusterctl.ConfigClient)
 	// Inject Repository Factory
-	provider := config.NewProvider(
+	Clusterctl.ProviderClient = config.NewProvider(
 		config.OpenStackProviderName,
 		"https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/latest/infrastructure-components.yaml",
 		clusterctlv1.InfrastructureProviderType,
 	)
-	repositoryClient, err1 := repository.New(provider, configClient, repository.InjectYamlProcessor(nil))
-	if err1 != nil {
-		fmt.Println("Error create repository client")
-		_ = repositoryClient
+	Clusterctl.RepositoryClient, err = repository.New(Clusterctl.ProviderClient, Clusterctl.ConfigClient, repository.InjectYamlProcessor(nil))
+	if err != nil {
+		fmt.Println("Error create repository client", err)
+		return nil, err
 	}
 
-	kubeConfig := cluster.Kubeconfig{Path: kubeconfigFile}
-	clusterClient := cluster.New(kubeConfig, configClient)
+	Clusterctl.Kubeconfig = cluster.Kubeconfig{Path: path}
+	Clusterctl.ClusterClient = cluster.New(Clusterctl.Kubeconfig, Clusterctl.ConfigClient)
 	// repoClientFactoryInput := client.RepositoryClientFactoryInput{Provider: provider, Processor: }
 	// client.InjectRepositoryFactory(repoClient)
-	client, err2 := client.New(configFile,
-		client.InjectConfig(configClient))
+	Clusterctl.Client, err = client.New(configFile,
+		client.InjectConfig(Clusterctl.ConfigClient))
+
+	if err != nil {
+		fmt.Println("Error create Cluster client", err)
+		return nil, err
+	}
+	return Clusterctl.Client, nil
 }
