@@ -127,7 +127,7 @@ func (c *Client) GetKubeconfig(WorkloadClusterName string, Namespace string) (st
 	return kubeconfig, nil
 }
 
-func (c *Client) GetClusterTemplate(clusterName string, kubernetesVersion string, controlPlaneMachineCount int64, WorkerMachineCount int64, targetNamespace string, infrastructureProvider string, flavor string) {
+func (c *Client) GetClusterTemplate(clusterName string, kubernetesVersion string, controlPlaneMachineCount int64, WorkerMachineCount int64, targetNamespace string, infrastructureProvider string, flavor string) (string, error) {
 
 	clientKubeconfig := client.Kubeconfig{Path: c.Kubeconfig.Path, Context: c.Kubeconfig.Context}
 	providerRepositorySourceOptions := client.ProviderRepositorySourceOptions{
@@ -147,10 +147,11 @@ func (c *Client) GetClusterTemplate(clusterName string, kubernetesVersion string
 	template, err := c.Client.GetClusterTemplate(getClusterTemplateOptions)
 	if err != nil {
 		fmt.Println("Error when get cluster template", err)
+		return "", err
 	}
-	if template != nil {
-		yamlFile, _ := template.Yaml()
-		fmt.Println("Yaml file:", string(yamlFile))
-	}
+
+	yamlFile, _ := template.Yaml()
+	fmt.Println("Yaml file:", string(yamlFile))
+	return string(yamlFile), nil
 
 }

@@ -18,17 +18,17 @@ func init() {
 func main() {
 	fmt.Println("Main function")
 	var configs = map[string]string{
-		"OPENSTACK_IMAGE_NAME":                   "k8s-v1.24.8",
-		"OPENSTACK_EXTERNAL_NETWORK_ID":          "network.id",
-		"OPENSTACK_DNS_NAMESERVERS":              "8.8.8.8",
-		"OPENSTACK_SSH_KEY_NAME":                 "abc",
-		"OPENSTACK_CLOUD_CACERT_B64":             "tesst",
-		"OPENSTACK_CLOUD_PROVIDER_CONF_B64":      "conf-b64",
-		"OPENSTACK_CLOUD_YAML_B64":               "yaml64",
-		"OPENSTACK_FAILURE_DOMAIN":               "failure.domain",
-		"OPENSTACK_CLOUD":                        "cloud",
-		"OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR": "machine",
-		"OPENSTACK_NODE_MACHINE_FLAVOR":          "node",
+		"OPENSTACK_IMAGE_NAME":                   "OPENSTACK_IMAGE_NAME",
+		"OPENSTACK_EXTERNAL_NETWORK_ID":          "OPENSTACK_EXTERNAL_NETWORK_ID",
+		"OPENSTACK_DNS_NAMESERVERS":              "OPENSTACK_DNS_NAMESERVERS",
+		"OPENSTACK_SSH_KEY_NAME":                 "OPENSTACK_SSH_KEY_NAME",
+		"OPENSTACK_CLOUD_CACERT_B64":             "OPENSTACK_CLOUD_CACERT_B64",
+		"OPENSTACK_CLOUD_PROVIDER_CONF_B64":      "OPENSTACK_CLOUD_PROVIDER_CONF_B64",
+		"OPENSTACK_CLOUD_YAML_B64":               "OPENSTACK_CLOUD_YAML_B64",
+		"OPENSTACK_FAILURE_DOMAIN":               "OPENSTACK_FAILURE_DOMAIN",
+		"OPENSTACK_CLOUD":                        "OPENSTACK_CLOUD",
+		"OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR": "OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR",
+		"OPENSTACK_NODE_MACHINE_FLAVOR":          "OPENSTACK_NODE_MACHINE_FLAVOR",
 	}
 	c, err := client.CreateNewClient(kubeconfigFile, configs)
 	fmt.Println("Created client")
