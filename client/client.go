@@ -11,20 +11,21 @@ import (
 	cmd "sigs.k8s.io/cluster-api/cmd/clusterctl/cmd"
 )
 
-var configFile = "/home/ubuntu/cluster-api-sdk/config.yaml"
-var kubeconfigFile = "/home/ubuntu/.kube/config"
+var configFile = "/home/dcn/github/cluster-api-sdk/config.yaml"
+var kubeconfigFile = "/home/dcn/github/cluster-api-sdk/capi"
 var _ cmd.Version
 
 var _ client.ClusterClientFactoryInput
 
 // type Kubeconfig cluster.Kubeconfig
 type Client struct {
-	ConfigClient     config.Client
-	ProviderClient   config.Provider
-	RepositoryClient repository.Client
-	ClusterClient    cluster.Client
-	Client           client.Client
-	Kubeconfig       cluster.Kubeconfig
+	ConfigClient              config.Client
+	ProviderClient            config.Provider
+	RepositoryClient          repository.Client
+	ClusterClient             cluster.Client
+	Client                    client.Client
+	Kubeconfig                cluster.Kubeconfig
+	ClusterClientFactoryInput client.ClusterClientFactoryInput
 }
 
 var Clusterctl Client
@@ -78,13 +79,25 @@ func CreateNewClient(path string) (Client, error) {
 		fmt.Println("Error create repository client", err)
 		return Clusterctl, err
 	}
+	repositoryClientFactory := func(provider config.Provider, configClient config.Client, options ...repository.Option) (repository.Client, error) {
+		return Clusterctl.RepositoryClient, nil
+	}
 
+	// Convert to client.Config to cluster.Config because of compiler's complaining
 	Clusterctl.Kubeconfig = cluster.Kubeconfig{Path: path}
-	Clusterctl.ClusterClient = cluster.New(Clusterctl.Kubeconfig, Clusterctl.ConfigClient)
-	// repoClientFactoryInput := client.RepositoryClientFactoryInput{Provider: provider, Processor: }
-	// client.InjectRepositoryFactory(repoClient)
+	Clusterctl.ClusterClient = cluster.New(Clusterctl.Kubeconfig, Clusterctl.ConfigClient,
+		cluster.InjectRepositoryFactory(repositoryClientFactory))
+
+	// Create clusterClientFactory to override default clusterClientFactory
+	clusterClientFactory := func(i client.ClusterClientFactoryInput) (cluster.Client, error) {
+		return Clusterctl.ClusterClient, nil
+	}
+	// // Create Proxy to override default proxy
+	// cluster.Proxy.NewClient()
+	// Create clusterctl Client
 	Clusterctl.Client, err = client.New(configFile,
-		client.InjectConfig(Clusterctl.ConfigClient))
+		client.InjectConfig(Clusterctl.ConfigClient),
+		client.InjectClusterClientFactory(clusterClientFactory))
 
 	if err != nil {
 		fmt.Println("Error create Cluster client", err)
@@ -93,8 +106,8 @@ func CreateNewClient(path string) (Client, error) {
 	return Clusterctl, nil
 }
 
-func (c *Client) GetKubeconfig(Namespace string, WorkloadClusterName string) (string, error) {
-	clientKubeconfig := client.Kubeconfig{Path: c.Kubeconfig.Path, Context: c.Kubeconfig.Context}
+func (c *Client) GetKubeconfig(WorkloadClusterName string, Namespace string) (string, error) {
+	clientKubeconfig := client.Kubeconfig{Path: c.Kubeconfig.Path}
 	options := client.GetKubeconfigOptions{
 		Kubeconfig:          clientKubeconfig,
 		Namespace:           Namespace,

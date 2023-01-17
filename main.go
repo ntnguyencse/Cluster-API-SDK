@@ -8,7 +8,7 @@ import (
 	// clusterclient "sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 )
 
-var kubeconfigFile = "/home/ubuntu/.kube/config"
+var kubeconfigFile = "/home/dcn/github/cluster-api-sdk/capi"
 
 func init() {
 	fmt.Println("Init function")
@@ -27,7 +27,7 @@ func main() {
 	fmt.Println(provider[0])
 	fmt.Println("Get KubeConfig")
 
-	kubeCluster, err := c.GetKubeconfig("test1", "default")
+	kubeCluster, err := c.GetKubeconfig("my-cluster", "default")
 	fmt.Println(kubeCluster)
 	c.GetClusterTemplate("a", "1.24.8", 3, 3, "test", c.ProviderClient.Name(), "medium")
 }
