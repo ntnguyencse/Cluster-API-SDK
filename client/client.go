@@ -12,7 +12,7 @@ import (
 )
 
 var configFile = "/home/dcn/github/cluster-api-sdk/config.yaml"
-var kubeconfigFile = "/home/dcn/github/cluster-api-sdk/capi"
+var DefaultKubeconfigFile = "/home/dcn/github/cluster-api-sdk/capi"
 var _ cmd.Version
 
 var _ client.ClusterClientFactoryInput
