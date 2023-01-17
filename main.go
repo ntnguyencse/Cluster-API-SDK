@@ -17,7 +17,20 @@ func init() {
 
 func main() {
 	fmt.Println("Main function")
-	c, err := client.CreateNewClient(kubeconfigFile)
+	var configs = map[string]string{
+		"OPENSTACK_IMAGE_NAME":                   "k8s-v1.24.8",
+		"OPENSTACK_EXTERNAL_NETWORK_ID":          "network.id",
+		"OPENSTACK_DNS_NAMESERVERS":              "8.8.8.8",
+		"OPENSTACK_SSH_KEY_NAME":                 "abc",
+		"OPENSTACK_CLOUD_CACERT_B64":             "tesst",
+		"OPENSTACK_CLOUD_PROVIDER_CONF_B64":      "conf-b64",
+		"OPENSTACK_CLOUD_YAML_B64":               "yaml64",
+		"OPENSTACK_FAILURE_DOMAIN":               "failure.domain",
+		"OPENSTACK_CLOUD":                        "cloud",
+		"OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR": "machine",
+		"OPENSTACK_NODE_MACHINE_FLAVOR":          "node",
+	}
+	c, err := client.CreateNewClient(kubeconfigFile, configs)
 	fmt.Println("Created client")
 	if err != nil {
 		fmt.Println("Error when create client", err)
@@ -29,5 +42,6 @@ func main() {
 
 	kubeCluster, err := c.GetKubeconfig("my-cluster", "default")
 	fmt.Println(kubeCluster)
-	c.GetClusterTemplate("a", "1.24.8", 3, 3, "test", c.ProviderClient.Name(), "medium")
+	// Infrastructure must include version inside input: Ex openstack v0.6.4
+	c.GetClusterTemplate("a", "1.24.8", 3, 3, "test", "openstack:v0.6.4", "")
 }

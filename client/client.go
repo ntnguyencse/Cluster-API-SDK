@@ -12,7 +12,7 @@ import (
 )
 
 var configFile = "/home/dcn/github/cluster-api-sdk/config.yaml"
-var kubeconfigFile = "/home/dcn/github/cluster-api-sdk/capi"
+var DefaultKubeconfigFile = "/home/dcn/github/cluster-api-sdk/capi"
 var _ cmd.Version
 
 var _ client.ClusterClientFactoryInput
@@ -59,21 +59,26 @@ type ProviderRepositorySourceOptions client.ProviderRepositorySourceOptions
 // 	Flavor string
 // }
 
-func CreateNewClient(path string) (Client, error) {
+func CreateNewClient(path string, configs map[string]string) (Client, error) {
 	// Inject config
+	// Create Reader
+
 	var err error
-	Clusterctl.ConfigClient, err = config.New(configFile)
+	reader := CreateReaderWithConfigs(configs)
+	Clusterctl.ConfigClient, err = config.New(configFile, config.InjectReader(reader))
 	if err != nil {
 		fmt.Println("Error create configClient", err)
 		return Clusterctl, err
 	}
 	client.InjectConfig(Clusterctl.ConfigClient)
 	// Inject Repository Factory
+	// Config for Provider in here
 	Clusterctl.ProviderClient = config.NewProvider(
 		config.OpenStackProviderName,
-		"https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/latest/infrastructure-components.yaml",
+		"https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/v0.6.4/infrastructure-components.yaml",
 		clusterctlv1.InfrastructureProviderType,
 	)
+	//
 	Clusterctl.RepositoryClient, err = repository.New(Clusterctl.ProviderClient, Clusterctl.ConfigClient, repository.InjectYamlProcessor(nil))
 	if err != nil {
 		fmt.Println("Error create repository client", err)
@@ -86,7 +91,8 @@ func CreateNewClient(path string) (Client, error) {
 	// Convert to client.Config to cluster.Config because of compiler's complaining
 	Clusterctl.Kubeconfig = cluster.Kubeconfig{Path: path}
 	Clusterctl.ClusterClient = cluster.New(Clusterctl.Kubeconfig, Clusterctl.ConfigClient,
-		cluster.InjectRepositoryFactory(repositoryClientFactory))
+		cluster.InjectRepositoryFactory(repositoryClientFactory),
+	)
 
 	// Create clusterClientFactory to override default clusterClientFactory
 	clusterClientFactory := func(i client.ClusterClientFactoryInput) (cluster.Client, error) {
@@ -128,13 +134,7 @@ func (c *Client) GetClusterTemplate(clusterName string, kubernetesVersion string
 		InfrastructureProvider: infrastructureProvider,
 		Flavor:                 flavor,
 	}
-	// urlSourceOptions := client.URLSourceOptions{URL: c.ProviderClient.URL()}
-
-	// configMapSourceOptions := client.ConfigMapSourceOptions{
-	// 	Namespace: "",
-	// 	Name:      "",
-	// 	DataKey:   "",
-	// }
+	// Options for generate cluster yaml file
 	getClusterTemplateOptions := client.GetClusterTemplateOptions{
 		Kubeconfig:               clientKubeconfig,
 		ProviderRepositorySource: &providerRepositorySourceOptions,
@@ -144,10 +144,13 @@ func (c *Client) GetClusterTemplate(clusterName string, kubernetesVersion string
 		ControlPlaneMachineCount: &controlPlaneMachineCount,
 		WorkerMachineCount:       &WorkerMachineCount,
 	}
-	_, err := c.Client.GetClusterTemplate(getClusterTemplateOptions)
+	template, err := c.Client.GetClusterTemplate(getClusterTemplateOptions)
 	if err != nil {
 		fmt.Println("Error when get cluster template", err)
 	}
-	// yamlFile, _ := template.Yaml()
-	fmt.Println("Yaml file:", "yamlFile")
+	if template != nil {
+		yamlFile, _ := template.Yaml()
+		fmt.Println("Yaml file:", string(yamlFile))
+	}
+
 }
