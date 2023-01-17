@@ -71,7 +71,7 @@ func CreateNewClient(path string) (Client, error) {
 	// Inject Repository Factory
 	Clusterctl.ProviderClient = config.NewProvider(
 		config.OpenStackProviderName,
-		"https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/latest/infrastructure-components.yaml",
+		"https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/v0.6.4/infrastructure-components.yaml",
 		clusterctlv1.InfrastructureProviderType,
 	)
 	Clusterctl.RepositoryClient, err = repository.New(Clusterctl.ProviderClient, Clusterctl.ConfigClient, repository.InjectYamlProcessor(nil))
@@ -144,10 +144,13 @@ func (c *Client) GetClusterTemplate(clusterName string, kubernetesVersion string
 		ControlPlaneMachineCount: &controlPlaneMachineCount,
 		WorkerMachineCount:       &WorkerMachineCount,
 	}
-	_, err := c.Client.GetClusterTemplate(getClusterTemplateOptions)
+	template, err := c.Client.GetClusterTemplate(getClusterTemplateOptions)
 	if err != nil {
 		fmt.Println("Error when get cluster template", err)
 	}
-	// yamlFile, _ := template.Yaml()
-	fmt.Println("Yaml file:", "yamlFile")
+	if template != nil {
+		yamlFile, _ := template.Yaml()
+		fmt.Println("Yaml file:", string(yamlFile))
+	}
+
 }

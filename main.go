@@ -29,5 +29,5 @@ func main() {
 
 	kubeCluster, err := c.GetKubeconfig("my-cluster", "default")
 	fmt.Println(kubeCluster)
-	c.GetClusterTemplate("a", "1.24.8", 3, 3, "test", c.ProviderClient.Name(), "medium")
+	c.GetClusterTemplate("a", "1.24.8", 3, 3, "test", "openstack:v0.6.4", "")
 }
