@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 
-	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
+	// clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	client "sigs.k8s.io/cluster-api/cmd/clusterctl/client"
 	cluster "sigs.k8s.io/cluster-api/cmd/clusterctl/client/cluster"
 	config "sigs.k8s.io/cluster-api/cmd/clusterctl/client/config"
@@ -59,7 +59,7 @@ type ProviderRepositorySourceOptions client.ProviderRepositorySourceOptions
 // 	Flavor string
 // }
 
-func CreateNewClient(path string, configs map[string]string) (Client, error) {
+func CreateNewClient(path string, configs map[string]string, providerConfigs Provider) (Client, error) {
 	// Inject config
 	// Create Reader
 
@@ -74,9 +74,9 @@ func CreateNewClient(path string, configs map[string]string) (Client, error) {
 	// Inject Repository Factory
 	// Config for Provider in here
 	Clusterctl.ProviderClient = config.NewProvider(
-		config.OpenStackProviderName,
-		"https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/v0.6.4/infrastructure-components.yaml",
-		clusterctlv1.InfrastructureProviderType,
+		providerConfigs.Name,
+		providerConfigs.Url,
+		providerConfigs.ProviderType,
 	)
 	//
 	Clusterctl.RepositoryClient, err = repository.New(Clusterctl.ProviderClient, Clusterctl.ConfigClient, repository.InjectYamlProcessor(nil))

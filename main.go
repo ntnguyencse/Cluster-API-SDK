@@ -30,7 +30,8 @@ func main() {
 		"OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR": "OPENSTACK_CONTROL_PLANE_MACHINE_FLAVOR",
 		"OPENSTACK_NODE_MACHINE_FLAVOR":          "OPENSTACK_NODE_MACHINE_FLAVOR",
 	}
-	c, err := client.CreateNewClient(kubeconfigFile, configs)
+	providerConfigs := client.CreateProviderConfig(client.OPENSTACK, client.OPENSTACK_URL, client.InfrastructureProviderType)
+	c, err := client.CreateNewClient(kubeconfigFile, configs, providerConfigs)
 	fmt.Println("Created client")
 	if err != nil {
 		fmt.Println("Error when create client", err)

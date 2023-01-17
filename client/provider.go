@@ -31,6 +31,12 @@ const (
 	// ProviderTypeUnknown is used when the type is unknown.
 	ProviderTypeUnknown = clusterctlv1.ProviderType("")
 )
+const (
+	OPENSTACK = "openstack"
+)
+const (
+	OPENSTACK_URL = "https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases/download/v0.6.4/infrastructure-components.yaml"
+)
 
 type Provider struct {
 	Name         string
