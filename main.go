@@ -6,6 +6,7 @@ import (
 
 	"github.com/ntnguyencse/cluster-api-sdk/client"
 	// clusterclient "sigs.k8s.io/cluster-api/cmd/clusterctl/client"
+	kubernetesclient "github.com/ntnguyencse/cluster-api-sdk/kubernetes-client"
 )
 
 var kubeconfigFile = "/home/dcn/github/cluster-api-sdk/capi"
@@ -16,6 +17,8 @@ func init() {
 }
 
 func main() {
+	clientset, _ := kubernetesclient.CreateKubernetesClient(&kubeconfigFile)
+	kubernetesclient.GetPods(clientset, "default")
 	fmt.Println("Main function")
 	var configs = map[string]string{
 		"OPENSTACK_IMAGE_NAME":                   "OPENSTACK_IMAGE_NAME",
