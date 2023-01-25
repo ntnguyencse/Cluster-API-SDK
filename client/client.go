@@ -127,6 +127,12 @@ func (c *Client) GetKubeconfig(WorkloadClusterName string, Namespace string) (st
 	return kubeconfig, nil
 }
 
+// GetClusterTemplate Function
+// clusterName: name of cluster which will be generated
+// ....
+// targetNamespace: namespace cluster will be deployed
+// infrastructureProvider: infrastructure where cluster will run on
+// flavor: postfix for template cluster
 func (c *Client) GetClusterTemplate(clusterName string, kubernetesVersion string, controlPlaneMachineCount int64, WorkerMachineCount int64, targetNamespace string, infrastructureProvider string, flavor string) (string, error) {
 
 	clientKubeconfig := client.Kubeconfig{Path: c.Kubeconfig.Path, Context: c.Kubeconfig.Context}
