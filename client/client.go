@@ -133,22 +133,23 @@ func (c *Client) GetKubeconfig(WorkloadClusterName string, Namespace string) (st
 // targetNamespace: namespace cluster will be deployed
 // infrastructureProvider: infrastructure where cluster will run on
 // flavor: postfix for template cluster
-func (c *Client) GetClusterTemplate(clusterName string, kubernetesVersion string, controlPlaneMachineCount int64, WorkerMachineCount int64, targetNamespace string, infrastructureProvider string, flavor string) (string, error) {
+func (c *Client) GetClusterTemplate(clusterName string, targetNamespace string, templateUrl string) (string, error) {
 
-	clientKubeconfig := client.Kubeconfig{Path: c.Kubeconfig.Path, Context: c.Kubeconfig.Context}
-	providerRepositorySourceOptions := client.ProviderRepositorySourceOptions{
-		InfrastructureProvider: infrastructureProvider,
-		Flavor:                 flavor,
+	// clientKubeconfig := client.Kubeconfig{Path: c.Kubeconfig.Path, Context: c.Kubeconfig.Context}
+	// providerRepositorySourceOptions := client.ProviderRepositorySourceOptions{
+	// 	InfrastructureProvider: infrastructureProvider,
+	// 	Flavor:                 flavor,
+	// }
+	urlSource := client.URLSourceOptions{
+		URL: templateUrl,
 	}
 	// Options for generate cluster yaml file
 	getClusterTemplateOptions := client.GetClusterTemplateOptions{
-		Kubeconfig:               clientKubeconfig,
-		ProviderRepositorySource: &providerRepositorySourceOptions,
-		TargetNamespace:          targetNamespace,
-		KubernetesVersion:        kubernetesVersion,
-		ClusterName:              clusterName,
-		ControlPlaneMachineCount: &controlPlaneMachineCount,
-		WorkerMachineCount:       &WorkerMachineCount,
+		// Kubeconfig: clientKubeconfig,
+		// ProviderRepositorySource: &providerRepositorySourceOptions,
+		URLSource:       &urlSource,
+		TargetNamespace: targetNamespace,
+		ClusterName:     clusterName,
 	}
 	template, err := c.Client.GetClusterTemplate(getClusterTemplateOptions)
 	if err != nil {
