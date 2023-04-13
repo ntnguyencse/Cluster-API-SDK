@@ -158,7 +158,6 @@ func (c *Client) GetClusterTemplate(clusterName string, targetNamespace string, 
 	}
 
 	yamlFile, _ := template.Yaml()
-	fmt.Println("Yaml file:", string(yamlFile))
 	return string(yamlFile), nil
 
 }

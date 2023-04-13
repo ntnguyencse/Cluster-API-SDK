@@ -34,7 +34,7 @@ func main() {
 		"KUBERNETES_VERSION":                     "1.24.5",
 	}
 	providerConfigs := client.CreateProviderConfig(client.OPENSTACK, client.OPENSTACK_URL, client.InfrastructureProviderType)
-	c, err := client.CreateNewClient(kubeconfigFile, configs, providerConfigs)
+	c, err := client.CreateNewClient(os.Getenv("KUBECONFIG"), configs, providerConfigs)
 	fmt.Println("Created client")
 	if err != nil {
 		fmt.Println("Error when create client", err)
