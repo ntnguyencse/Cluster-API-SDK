@@ -90,7 +90,7 @@ func GetPods(clientset *kubernetes.Clientset, namespace string) {
 }
 
 func KubectlApplyDefault(yamlString *string) {
-	arg := []string{"kubectl", "apply", "-f", "/home/ubuntu/l-kaas/Cluster-API-SDK/config.yaml", "--kubeconfig=/home/ubuntu/config"}
+	arg := []string{"kubectl", "apply"}
 	var defaultConfigFlags = genericclioptions.NewConfigFlags(true).WithDeprecatedPasswordFlag().WithDiscoveryBurst(300).WithDiscoveryQPS(50.0)
 	kubectlOptions := k8scmd.KubectlOptions{
 		PluginHandler: k8scmd.NewDefaultPluginHandler(k8scmdplugin.ValidPluginFilenamePrefixes),
@@ -119,11 +119,11 @@ func KubectlApplyDefault(yamlString *string) {
 	applyIOStream, _, outbuff, _ := genericclioptions.NewTestIOStreams()
 	applyCmd := apply.NewCmdApply("kubectl", f, applyIOStream)
 
-	applyCmd.SetArgs([]string{"-f", "/home/ubuntu/l-kaas/Cluster-API-SDK/test.yaml"})
+	// applyCmd.SetArgs([]string{"-f", "/home/ubuntu/l-kaas/Cluster-API-SDK/test.yaml"})
 
 	applyCmd.Flags().Set("filename", "/home/ubuntu/l-kaas/Cluster-API-SDK/test.yaml")
 	// applyCmd.Flags().Set("dry-run", "client")
-	applyCmd.Flags().Set("server-side", "true")
+	// applyCmd.Flags().Set("server-side", "true")
 	// applyCmd.Flags().Set("output", "json")
 	// applyCmd.Flags().Set("prune", "true")
 
