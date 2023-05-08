@@ -67,10 +67,11 @@ func main() {
 	}
 	fmt.Println("Dynamic CLient", dynClient)
 
-	body, err := os.ReadFile("config.yaml")
+	// body, err := os.ReadFile("config.yaml")
 
-	yamlString := string(body)
-	kubernetesclient.KubectlApplyDefault(&yamlString)
+	// yamlString := string(body)
+	// kubernetesclient.KubectlApplyDefault(&yamlString)
+	kubernetesclient.KubectlApplyYamlFile("/home/ubuntu/l-kaas/Cluster-API-SDK/test.yaml")
 
 	// var configs = map[string]string{
 	// 	"OPENSTACK_IMAGE_NAME":                   "OPENSTACK_IMAGE_NAME",

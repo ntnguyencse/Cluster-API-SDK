@@ -88,7 +88,40 @@ func GetPods(clientset *kubernetes.Clientset, namespace string) {
 		time.Sleep(10 * time.Second)
 	}
 }
+func KubectlApplyYamlFile(yamlFilePath string) {
+	arg := []string{"kubectl", "apply"}
+	var defaultConfigFlags = genericclioptions.NewConfigFlags(true).WithDeprecatedPasswordFlag().WithDiscoveryBurst(300).WithDiscoveryQPS(50.0)
+	kubectlOptions := k8scmd.KubectlOptions{
+		PluginHandler: k8scmd.NewDefaultPluginHandler(k8scmdplugin.ValidPluginFilenamePrefixes),
+		Arguments:     arg,
+		ConfigFlags:   defaultConfigFlags,
+		IOStreams:     genericclioptions.IOStreams{In: strings.NewReader(""), Out: os.Stdout, ErrOut: os.Stderr},
+	}
+	// k8scmd.NewDefaultKubectlCommandWithArgs(kubectlOptions)
+	cmd := k8scmd.NewKubectlCommand(kubectlOptions)
+	_ = cmd
+	// fmt.Println("Print cmd: ", cmd)
+	kubeConfigFlags := kubectlOptions.ConfigFlags
+	if kubeConfigFlags == nil {
+		kubeConfigFlags = defaultConfigFlags
+	}
+	// kubeConfigFlags.AddFlags(flags)
+	matchVersionKubeConfigFlags := cmdutil.NewMatchVersionFlags(kubeConfigFlags)
+	// matchVersionKubeConfigFlags.AddFlags(flags)
+	// Updates hooks to add kubectl command headers: SIG CLI KEP 859.
+	// addCmdHeaderHooks(cmds, kubeConfigFlags)
+	f := cmdutil.NewFactory(matchVersionKubeConfigFlags)
 
+	applyIOStream, _, outbuff, _ := genericclioptions.NewTestIOStreams()
+	applyCmd := apply.NewCmdApply("kubectl", f, applyIOStream)
+
+	applyCmd.Flags().Set("filename", yamlFilePath)
+	// Enable Debug Flags in cobra commands
+	// applyCmd.DebugFlags()
+	applyCmd.Run(applyCmd, []string{})
+
+	fmt.Println("End of function", "out", outbuff)
+}
 func KubectlApplyDefault(yamlString *string) {
 	arg := []string{"kubectl", "apply"}
 	var defaultConfigFlags = genericclioptions.NewConfigFlags(true).WithDeprecatedPasswordFlag().WithDiscoveryBurst(300).WithDiscoveryQPS(50.0)
@@ -143,7 +176,7 @@ func KubectlApplyDefault(yamlString *string) {
 	// // Run the builder
 	// result := builder.Do()
 
-	applyCmd.DebugFlags()
+	// applyCmd.DebugFlags()
 	applyCmd.Run(applyCmd, []string{})
 
 	// err := applyCmd.Execute()
